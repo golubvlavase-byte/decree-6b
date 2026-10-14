@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decree_6B_2024</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f4; color: #333; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; width: 100%; max-width: 600px; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #2c3e50; font-size: 24px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .subtitle { color: #7f8c8d; margin-bottom: 30px; font-size: 14px; }
+        #petition-text { text-align: left; line-height: 1.6; color: #444; margin-bottom: 25px; font-size: 16px; }
+        hr { border: 0; border-top: 2px solid #eee; margin: 25px 0; }
+       
+        /* Form styles */
+        .form-group { text-align: left; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50; }
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+       
+        /* Canvas styles */
+        #canvas-wrapper { background: #fff; border: 2px dashed #ccc; border-radius: 8px; margin: 15px 0; overflow: hidden; position: relative; }
+        canvas { width: 100%; height: 150px; display: block; background: #fff; cursor: crosshair; }
+        .canvas-controls { display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+        button { padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; color: white; transition: background 0.2s; }
+        .btn-clear { background-color: #e74c3c; }
+        .btn-submit { background-color: #2ecc71; width: 100%; font-size: 18px; padding: 15px; }
+       
+        .status-message { margin-top: 15px; padding: 10px; border-radius: 6px; display: none; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Decree_6B_2024</h1>
+    <div class="subtitle">On Immediate Resolution of Disputes</div>
+    <!-- Text of the petition -->
+    <div id="petition-text"></div>
+    <hr>
+    <form id="sign-form">
+        <div class="form-group">
+            <label for="name">Name / Nick:</label>
+            <input type="text" id="name" placeholder="e.g. Ivanov I." required>
+        </div>
+        <p style="text-align:left; font-size:14px; color:#666;">Sign with your finger (phone) or mouse (PC):</p>
+        <div id="canvas-wrapper">
+            <canvas id="signatureCanvas"></canvas>
+        </div>
+       
+        <div class="canvas-controls">
+            <button type="button" class="btn-clear" onclick="clearCanvas()">Clear</button>
+        </div>
+        <button type="submit" class="btn-submit">SIGN THE DECREE</button>
+    </form>
+    <div id="status" class="status-message"></div>
+</div>
+<script>
+    // --- SETTINGS ---
+    // PASTE YOUR APPS SCRIPT WEB APP URL HERE:
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzQeiAphEhK2EiXaFsB48jeKA-MBphV8UI84Ysnp-NDt43IVj1hhPKDq60oTLFziDd8/exec';
+   
+    const PETITION_TEXT = `
+В целях сохранения учебного времени, поддержания дисциплины и исключения затяжных разбирательств постановляется: 
+При возникновении любой спорной ситуации (вне зависимости от обстоятельств, места и времени) вопрос о виновности считается закрытым без проведения дополнительных расследований. 
+ИТОГОВЫЙ ЗАКОНОПРОЕКТ: 
+«Во всём виноват Дубницкий Д.»
+    `;
+    // -----------------
+    // Render text
+    const textElement = document.getElementById('petition-text');
+    textElement.innerText = PETITION_TEXT.trim();
+    // Canvas setup
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    function resize() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#000';
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        updatePosition(e);
+    }
+    function stopDrawing() { isDrawing = false; }
+    function updatePosition(e) {
+        const rect = canvas.getBoundingClientRect();
+        let x, y;
+        if (e.type.startsWith('touch')) {
+            x = e.touches[0].clientX - rect.left;
+            y = e.touches[0].clientY - rect.top;
+        } else {
+            x = e.clientX - rect.left;
+            y = e.clientY - rect.top;
+        }
+        draw(x, y);
+    }
+    let lastX = 0, lastY = 0;
+    function draw(x, y) {
+        if (!isDrawing) return;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        lastX = x;
+        lastY = y;
+    }
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', updatePosition);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing, {passive: false});
+    canvas.addEventListener('touchmove', updatePosition, {passive: false});
+    canvas.addEventListener('touchend', stopDrawing);
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        lastX = 0; lastY = 0;
+    }
+    document.getElementById('sign-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const statusDiv = document.getElementById('status');
+        statusDiv.style.display = 'block';
+        statusDiv.className = 'status-message success';
+        statusDiv.textContent = 'Sending signature...';
+        // Get signature as image data
+        const signatureData = canvas.toDataURL('image/png');
+        const nameInput = document.getElementById('name').value.trim();
+        if (!nameInput) {
+            statusDiv.className = 'status-message error';
+            statusDiv.textContent = 'Please enter your name.';
+            return;
+        }
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name: nameInput, signature: signatureData})
+            });
+           
+            const result = await response.json();
+            if (result.status === 'success') {
+                statusDiv.textContent = 'Success! Signature recorded.';
+                setTimeout(() => {
+                    // Можно добавить редирект или очистку формы
+                    document.getElementById('sign-form').reset();
+                    clearCanvas();
+                }, 2000);
+            } else {
+                throw new Error('Failed to save');
+            }
+        } catch (err) {
+            statusDiv.className = 'status-message error';
+            statusDiv.textContent = 'Error: ' + err.message;
+        }
+    });
+</script>
+</body>
+</html>
